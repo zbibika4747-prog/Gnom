@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГНОМ — Твоя база знаний</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Geologica:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0f0a;
+  --bg2: #131710;
+  --bg3: #1a2014;
+  --card: #161b12;
+  --card2: #1e2618;
+  --border: rgba(120,180,60,0.15);
+  --border2: rgba(120,180,60,0.3);
+  --green: #7cb82f;
+  --green2: #a8d85e;
+  --green-glow: rgba(124,184,47,0.15);
+  --amber: #d4a12a;
+  --amber2: #f0c040;
+  --amber-dim: rgba(212,161,42,0.12);
+  --mushroom: #c8836a;
+  --teal: #3aaa8a;
+  --blue: #4a9fd4;
+  --text: #d8e8c0;
+  --text2: #8a9e70;
+  --text3: #4a5c38;
+  --radius: 18px;
+  --radius2: 12px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Geologica',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* FOREST BG TEXTURE */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(60,100,20,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 100%, rgba(30,80,40,0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 30% at 50% 50%, rgba(20,40,10,0.4) 0%, transparent 70%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* GRAIN */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:0.5;
+  pointer-events:none;
+  z-index:1;
+}
+
+.container{
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 24px;
+  position:relative;
+  z-index:2;
+}
+
+/* ========== HEADER ========== */
+header{
+  padding:60px 24px 0;
+  position:relative;
+  z-index:2;
+  max-width:1200px;
+  margin:0 auto;
+}
+
+.logo-area{
+  display:flex;
+  align-items:flex-end;
+  gap:20px;
+  margin-bottom:16px;
+}
+
+.gnome-icon{
+  font-size:72px;
+  line-height:1;
+  filter:drop-shadow(0 0 20px rgba(124,184,47,0.4));
+  animation:float 4s ease-in-out infinite;
+}
+
+@keyframes float{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+
+.logo-text{
+  display:flex;
+  flex-direction:column;
+}
+
+.logo-title{
+  font-family:'Unbounded',sans-serif;
+  font-size:clamp(52px,8vw,96px);
+  font-weight:900;
+  line-height:0.9;
+  background:linear-gradient(135deg, var(--green2) 0%, var(--amber2) 60%, var(--green) 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  letter-spacing:-3px;
+}
+
+.logo-sub{
+  font-family:'Geologica',sans-serif;
+  font-size:12px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--text2);
+  margin-top:6px;
+}
+
+.header-desc{
+  max-width:600px;
+  color:var(--text2);
+  font-size:15px;
+  line-height:1.7;
+  margin-bottom:40px;
+}
+
+.header-desc strong{color:var(--green2);}
+
+/* STATS ROW */
+.stats{
+  display:flex;
+  gap:32px;
+  margin-bottom:60px;
+  flex-wrap:wrap;
+}
+
+.stat{
+  display:flex;
+  flex-direction:column;
+}
+
+.stat-num{
+  font-family:'Unbounded',sans-serif;
+  font-size:28px;
+  font-weight:700;
+  color:var(--green);
+}
+
+.stat-label{
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text3);
+}
+
+/* DIVIDER */
+.divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--border2),transparent);
+  margin:0 0 48px;
+}
+
+/* SEARCH */
+.search-wrap{
+  margin-bottom:48px;
+  position:relative;
+  max-width:480px;
+}
+
+.search-icon{
+  position:absolute;
+  left:18px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--text3);
+  font-size:16px;
+  pointer-events:none;
+}
+
+input#search{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:50px;
+  padding:14px 20px 14px 48px;
+  color:var(--text);
+  font-family:'Geologica',sans-serif;
+  font-size:14px;
+  outline:none;
+  transition:all 0.3s;
+}
+
+input#search:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px var(--green-glow);
+}
+
+input#search::placeholder{color:var(--text3);}
+
+/* CATEGORY FILTER */
+.filter-row{
+  display:flex;
+  gap:10px;
+  margin-bottom:40px;
+  flex-wrap:wrap;
+}
+
+.filter-btn{
+  padding:8px 20px;
+  border-radius:50px;
+  border:1px solid var(--border2);
+  background:transparent;
+  color:var(--text2);
+  font-family:'Geologica',sans-serif;
+  font-size:12px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+
+.filter-btn:hover,.filter-btn.active{
+  background:var(--green);
+  border-color:var(--green);
+  color:#0c0f0a;
+}
+
+/* SECTION TITLE */
+.section-title{
+  font-family:'Unbounded',sans-serif;
+  font-size:11px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:24px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.section-title::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:var(--border);
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:20px;
+  margin-bottom:80px;
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:28px;
+  cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.23,1,0.32,1);
+  position:relative;
+  overflow:hidden;
+  text-decoration:none;
+  display:block;
+  color:inherit;
+  animation:fadeUp 0.5s both;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 80% 80% at 50% -20%, var(--card-glow, var(--green-glow)) 0%, transparent 70%);
+  opacity:0;
+  transition:opacity 0.4s;
+}
+
+.card:hover{
+  border-color:var(--border2);
+  transform:translateY(-4px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px var(--border2);
+}
+
+.card:hover::before{opacity:1;}
+
+.card-emoji{
+  font-size:32px;
+  margin-bottom:16px;
+  display:block;
+  line-height:1;
+}
+
+.card-cat{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 12px;
+  border-radius:50px;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:16px;
+  border:1px solid;
+  font-family:'Unbounded',sans-serif;
+}
+
+.cat-ai{background:rgba(74,159,212,0.1);color:var(--blue);border-color:rgba(74,159,212,0.3);}
+.cat-biz{background:rgba(212,161,42,0.1);color:var(--amber);border-color:rgba(212,161,42,0.3);}
+.cat-health{background:rgba(58,170,138,0.1);color:var(--teal);border-color:rgba(58,170,138,0.3);}
+.cat-psych{background:rgba(200,131,106,0.1);color:var(--mushroom);border-color:rgba(200,131,106,0.3);}
+.cat-game{background:rgba(124,184,47,0.1);color:var(--green);border-color:rgba(124,184,47,0.3);}
+
+.card-title{
+  font-family:'Unbounded',sans-serif;
+  font-size:15px;
+  font-weight:700;
+  line-height:1.3;
+  margin-bottom:10px;
+  color:var(--text);
+}
+
+.card-desc{
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.card-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.card-tag{
+  font-size:10px;
+  color:var(--text3);
+  letter-spacing:1px;
+}
+
+.card-arrow{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:1px solid var(--border2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text2);
+  font-size:14px;
+  transition:all 0.2s;
+}
+
+.card:hover .card-arrow{
+  background:var(--green);
+  border-color:var(--green);
+  color:#0c0f0a;
+}
+
+/* FEATURED CARD */
+.card-featured{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:40px;
+  align-items:center;
+  background:var(--bg3);
+  --card-glow:rgba(212,161,42,0.15);
+}
+
+@media(max-width:640px){
+  .card-featured{grid-template-columns:1fr;}
+}
+
+.featured-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 14px;
+  background:rgba(212,161,42,0.15);
+  border:1px solid rgba(212,161,42,0.4);
+  border-radius:50px;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--amber2);
+  margin-bottom:16px;
+  font-family:'Unbounded',sans-serif;
+}
+
+.card-featured .card-title{font-size:22px;}
+
+.featured-right{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.featured-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  font-size:12px;
+  color:var(--text2);
+}
+
+.featured-item-icon{font-size:18px;}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:40px 24px;
+  text-align:center;
+  position:relative;
+  z-index:2;
+}
+
+.footer-logo{
+  font-family:'Unbounded',sans-serif;
+  font-size:24px;
+  font-weight:900;
+  background:linear-gradient(135deg,var(--green2),var(--amber2));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:8px;
+}
+
+.footer-text{color:var(--text3);font-size:12px;letter-spacing:1px;}
+
+/* HOSTING BANNER */
+.hosting-banner{
+  background:linear-gradient(135deg, rgba(74,159,212,0.1) 0%, rgba(58,170,138,0.1) 100%);
+  border:1px solid rgba(74,159,212,0.25);
+  border-radius:var(--radius);
+  padding:28px 32px;
+  margin-bottom:48px;
+  display:flex;
+  align-items:center;
+  gap:24px;
+  flex-wrap:wrap;
+}
+
+.hosting-banner-icon{font-size:36px;flex-shrink:0;}
+
+.hosting-banner-text h3{
+  font-family:'Unbounded',sans-serif;
+  font-size:14px;
+  color:var(--blue);
+  margin-bottom:6px;
+}
+
+.hosting-banner-text p{
+  font-size:13px;
+  color:var(--text2);
+  line-height:1.6;
+}
+
+.hosting-banner-text p a{
+  color:var(--green2);
+  text-decoration:none;
+  border-bottom:1px dotted var(--green);
+}
+
+.hosting-banner-text p a:hover{color:var(--green);}
+
+/* HIDDEN CARD */
+.card.hidden{display:none;}
+
+/* EMPTY */
+.empty-msg{
+  grid-column:1/-1;
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text3);
+  font-size:14px;
+  display:none;
+}
+
+.empty-msg.show{display:block;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="gnome-icon">🍄</div>
+    <div class="logo-text">
+      <div class="logo-title">ГНОМ</div>
+      <div class="logo-sub">База знаний · Все материалы в одном месте</div>
+    </div>
+  </div>
+  <p class="header-desc">
+    Персональный портал с гайдами, руководствами и инструментами. 
+    <strong>14 материалов</strong> по AI, бизнесу, здоровью и психологии — 
+    собраны в одном месте.
+  </p>
+  <div class="stats">
+    <div class="stat"><span class="stat-num">14</span><span class="stat-label">Материалов</span></div>
+    <div class="stat"><span class="stat-num">4</span><span class="stat-label">Категории</span></div>
+    <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Пользы</span></div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="divider"></div>
+
+  <!-- HOSTING BANNER -->
+  <div class="hosting-banner">
+    <div class="hosting-banner-icon">🚀</div>
+    <div class="hosting-banner-text">
+      <h3>Как опубликовать этот сайт бесплатно</h3>
+      <p>
+        Зарегистрируйся на <a href="https://app.netlify.com/signup" target="_blank">Netlify.com</a> → 
+        нажми «Add new site» → «Deploy manually» → 
+        перетащи папку с файлами прямо в браузер → 
+        получи бесплатную ссылку вида <strong>твоёимя.netlify.app</strong> 
+        (SSL + CDN по всему миру, бесплатно навсегда).
+      </p>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Найти материал...">
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-row">
+    <button class="filter-btn active" data-cat="all">Все</button>
+    <button class="filter-btn" data-cat="ai">🤖 AI & Технологии</button>
+    <button class="filter-btn" data-cat="biz">💰 Бизнес</button>
+    <button class="filter-btn" data-cat="health">🌿 Здоровье</button>
+    <button class="filter-btn" data-cat="psych">🧠 Психология</button>
+    <button class="filter-btn" data-cat="game">🎮 Игры</button>
+  </div>
+
+  <!-- GRID -->
+  <div class="section-title">Все материалы</div>
+  <div class="grid" id="grid">
+
+    <!-- FEATURED: AI Website Builder -->
+    <a href="ai-website-builder-guide.html" class="card card-featured" data-cat="ai" data-title="ai website builder сайт без кода бесплатно">
+      <div>
+        <div class="featured-badge">⭐ Рекомендуется</div>
+        <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+        <div class="card-title">Сайт любого типа без кода, без бэкенда — бесплатно за минуты</div>
+        <div class="card-desc">Полная система: AI-генератор промта → Google AI Studio → FormSpree + GitHub + Netlify. Реальные формы, живой URL, SSL. Не заглушки — рабочий продукт.</div>
+        <div class="card-footer">
+          <span class="card-tag">AI Website Builder Guide</span>
+          <div class="card-arrow">→</div>
+        </div>
+      </div>
+      <div class="featured-right">
+        <div class="featured-item"><span class="featured-item-icon">🧠</span>Google AI Studio — генератор сайтов</div>
+        <div class="featured-item"><span class="featured-item-icon">📬</span>FormSpree — рабочие формы → email</div>
+        <div class="featured-item"><span class="featured-item-icon">🐙</span>GitHub — хранение кода</div>
+        <div class="featured-item"><span class="featured-item-icon">🚀</span>Netlify — бесплатный хостинг + CDN</div>
+        <div class="featured-item"><span class="featured-item-icon">🆓</span>Весь стек — Free tier</div>
+      </div>
+    </a>
+
+    <!-- Abacus AI -->
+    <a href="abacus-deepagent-guide.html" class="card" data-cat="ai" data-title="abacus ai deep agent vibe coding разбор">
+      <span class="card-emoji">🤖</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">Abacus AI Deep Agent — Реальный разбор</div>
+      <div class="card-desc">Vibe coding, правда и преувеличения, реальная стоимость. Честный анализ инструмента без маркетингового шума.</div>
+      <div class="card-footer">
+        <span class="card-tag">Abacus Deep Agent Guide</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- AI Skills -->
+    <a href="ai-skills-inside-out.html" class="card" data-cat="ai" data-title="ai навыки компетенции 7 слоёв умения">
+      <span class="card-emoji">🧩</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">7 Навыков AI, которые реально работают</div>
+      <div class="card-desc">Карта AI-компетенции изнутри наружу. Три волны AI, почему «снаружи внутрь» не работает, как реально прокачаться.</div>
+      <div class="card-footer">
+        <span class="card-tag">AI Skills Inside Out</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- AI Skills v2 -->
+    <a href="ai-skills-inside-out__1_.html" class="card" data-cat="ai" data-title="ai навыки компетенции слои версия 2">
+      <span class="card-emoji">🗺️</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">7 Слоёв AI-Компетенции — Версия 2.0</div>
+      <div class="card-desc">Обновлённая карта навыков AI. Углублённая версия с дополнительными уровнями и примерами применения.</div>
+      <div class="card-footer">
+        <span class="card-tag">AI Skills v2</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- AI Cartoon -->
+    <a href="ai_cartoon_full_guide.html" class="card" data-cat="ai" data-title="ai мультик мультфильм за 1 час бесплатно ребёнок">
+      <span class="card-emoji">🎬</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">Мультик для ребёнка за 1 час — бесплатно</div>
+      <div class="card-desc">Полный гайд по созданию анимации с помощью AI. Никакого опыта не нужно — пошаговая инструкция от идеи до готового видео.</div>
+      <div class="card-footer">
+        <span class="card-tag">AI Cartoon Full Guide</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Automator -->
+    <a href="automator-guide.html" class="card" data-cat="ai" data-title="автоматизация заработок автоматизатор 2025 умный">
+      <span class="card-emoji">⚡</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">Автоматизатор 2025 — Умный заработок, минимум усилий</div>
+      <div class="card-desc">Твой профиль автоматизатора: идеальные пути, инструментальный стек, конкретные шаги для запуска автодохода.</div>
+      <div class="card-footer">
+        <span class="card-tag">Automator Guide</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Reach Mora Niches -->
+    <a href="reach_mora_5_niches_guide.html" class="card" data-cat="ai" data-title="5 вирусных ниш reach mora контент ai 0 долларов">
+      <span class="card-emoji">📲</span>
+      <div class="card-cat cat-ai">🤖 AI & Технологии</div>
+      <div class="card-title">5 Вирусных Ниш с AI — «0 долларов» разбор</div>
+      <div class="card-desc">Reach Mora: полный разбор 5 ниш для вирусного контента. Как зарабатывать на AI-контенте без вложений.</div>
+      <div class="card-footer">
+        <span class="card-tag">Reach Mora · 5 Niches</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- B2B -->
+    <a href="b2b-guide.html" class="card" data-cat="biz" data-title="b2b деньги бизнес ниши 2025 заработок прибыль">
+      <span class="card-emoji">💼</span>
+      <div class="card-cat cat-biz">💰 Бизнес</div>
+      <div class="card-title">B2B Profit Map 2025 — Деньги в B2B</div>
+      <div class="card-desc">Топ ниши 2025, сравнение по прибыльности, входному порогу и скорости старта. Карта для тех, кто хочет работать с бизнесом.</div>
+      <div class="card-footer">
+        <span class="card-tag">B2B Guide</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Remote Jobs -->
+    <a href="remote_jobs.html" class="card" data-cat="biz" data-title="удалённые профессии работа 2026 дистанционно">
+      <span class="card-emoji">🌍</span>
+      <div class="card-cat cat-biz">💰 Бизнес</div>
+      <div class="card-title">Удалённые профессии 2026 — Проверено и разобрано</div>
+      <div class="card-desc">Какие профессии реально приносят деньги удалённо в 2026. Проверенные данные, без воды — конкретный разбор каждой ниши.</div>
+      <div class="card-footer">
+        <span class="card-tag">Remote Jobs Guide</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Health Myths -->
+    <a href="health_myths_33.html" class="card" data-cat="health" data-title="33 мифа здоровье научная проверка факты">
+      <span class="card-emoji">🔬</span>
+      <div class="card-cat cat-health">🌿 Здоровье</div>
+      <div class="card-title">33 Мифа о здоровье — Научная проверка</div>
+      <div class="card-desc">Полный разбор популярных заблуждений: что правда, что ложь, что зависит от контекста. Источники, данные, выводы.</div>
+      <div class="card-footer">
+        <span class="card-tag">Health Myths 33</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Food Guide -->
+    <a href="food_guide.html" class="card" data-cat="health" data-title="биохакинг питание еда здоровье кухня">
+      <span class="card-emoji">🥦</span>
+      <div class="card-cat cat-health">🌿 Здоровье</div>
+      <div class="card-title">Биохакинг на кухне — Питание как инструмент</div>
+      <div class="card-desc">Как настроить питание для максимальной продуктивности и здоровья. Практический гайд без псевдонауки.</div>
+      <div class="card-footer">
+        <span class="card-tag">Food Guide · Biohacking</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Wild Lettuce -->
+    <a href="wild-lettuce-knowledge-map.html" class="card" data-cat="health" data-title="дикий латук растение наука опасность двойник">
+      <span class="card-emoji">🌿</span>
+      <div class="card-cat cat-health">🌿 Здоровье</div>
+      <div class="card-title">Дикий Латук — Научная карта знаний</div>
+      <div class="card-desc">Что правда, что преувеличено, что опасно. Растение и его смертоносный двойник — полный научный разбор по важности и опасности.</div>
+      <div class="card-footer">
+        <span class="card-tag">Wild Lettuce · Knowledge Map</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- Dark Psych -->
+    <a href="dark_psych.html" class="card" data-cat="psych" data-title="тёмная психология манипуляции защита распознать">
+      <span class="card-emoji">🧠</span>
+      <div class="card-cat cat-psych">🧠 Психология</div>
+      <div class="card-title">Тёмная Психология — Распознай и защитись</div>
+      <div class="card-desc">Манипуляции, газлайтинг, скрытое влияние. Как распознать тёмные техники воздействия и защититься от них.</div>
+      <div class="card-footer">
+        <span class="card-tag">Dark Psychology</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- CodeQuest -->
+    <a href="codequest.html" class="card" data-cat="game" data-title="codequest игра код алгоритм интерактивная">
+      <span class="card-emoji">🎮</span>
+      <div class="card-cat cat-game">🎮 Игра</div>
+      <div class="card-title">CodeQuest: The Enchanted Algorithm</div>
+      <div class="card-desc">Интерактивная игра-квест по программированию. Учи алгоритмы через приключение — выбери свой путь в мире кода.</div>
+      <div class="card-footer">
+        <span class="card-tag">CodeQuest · Interactive</span>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <div class="empty-msg" id="emptyMsg">🍄 Ничего не найдено. Попробуй другой запрос.</div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">🍄 ГНОМ</div>
+  <p class="footer-text">Персональная база знаний · 14 материалов · Всегда под рукой</p>
+</footer>
+
+<script>
+const searchInput = document.getElementById('search');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.card');
+const emptyMsg = document.getElementById('emptyMsg');
+
+let activeCat = 'all';
+let searchQuery = '';
+
+// Stagger animation
+cards.forEach((c,i) => {
+  c.style.animationDelay = (i * 0.05) + 's';
+});
+
+function update() {
+  let visible = 0;
+  cards.forEach(card => {
+    if (card.id === 'emptyMsg') return;
+    const cat = card.dataset.cat;
+    const title = (card.dataset.title || '') + ' ' + (card.querySelector('.card-title')?.textContent || '');
+    const matchCat = activeCat === 'all' || cat === activeCat;
+    const matchSearch = !searchQuery || title.toLowerCase().includes(searchQuery.toLowerCase());
+    if (matchCat && matchSearch) {
+      card.classList.remove('hidden');
+      visible++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+  emptyMsg.classList.toggle('show', visible === 0);
+}
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCat = btn.dataset.cat;
+    update();
+  });
+});
+
+searchInput.addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  update();
+});
+</script>
+</body>
+</html>
